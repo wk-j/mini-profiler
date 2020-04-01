@@ -1,3 +1,4 @@
+using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ProfileEf.Controllers {
@@ -17,6 +18,12 @@ namespace ProfileEf.Controllers {
 
             _context.Students.Add(student);
             _context.SaveChanges();
+            return Ok(student);
+        }
+
+        [HttpGet]
+        public IActionResult Query() {
+            var student = _context.Students.Where(x => x.Name == "wk").ToList();
             return Ok(student);
         }
     }
