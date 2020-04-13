@@ -1,7 +1,7 @@
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 
-namespace ProfileEf.Controllers {
+namespace MyWeb.Controllers {
     [ApiController]
     [Route("api/[controller]/[action]")]
     public class StudentController : ControllerBase {

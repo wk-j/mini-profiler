@@ -1,28 +1,15 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 
-namespace ProfileEf {
-    public class Student {
-        public int Id { set; get; }
-        public string Name { set; get; }
-    }
+namespace MyWeb {
 
-    public class MyContext : DbContext {
-        public MyContext(DbContextOptions options) : base(options) {
-
-        }
-        public DbSet<Student> Students { set; get; }
+    public class AppSettings {
+        public string ConnectionString { set; get; }
+        public bool EnableProfiler { set; get; }
     }
 
     public class Startup {
@@ -33,34 +20,38 @@ namespace ProfileEf {
         public IConfiguration Configuration { get; }
 
         public void ConfigureServices(IServiceCollection services) {
+
+            var settings = Configuration.Get<AppSettings>();
+
+            services.AddSingleton<AppSettings>(settings);
             services.AddMemoryCache();
             services.AddDbContext<MyContext>(options =>
-                options.UseNpgsql(Configuration["ConnectionString"], x => {
+                options.UseNpgsql(settings.ConnectionString, x => {
                     x.SetPostgresVersion(9, 3);
                 })
-
             );
             services.AddControllers();
-            services.AddMiniProfiler(opitons =>
-                opitons.RouteBasePath = "/profiler"
-            ).AddEntityFramework();
+
+            if (settings.EnableProfiler) {
+                services.AddMiniProfiler(opitons =>
+                    opitons.RouteBasePath = "/profiler"
+                ).AddEntityFramework();
+            }
         }
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, MyContext context) {
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, MyContext context, AppSettings settings) {
+            context.Database.EnsureCreated();
+
             if (env.IsDevelopment()) {
                 app.UseDeveloperExceptionPage();
             }
 
-            context.Database.EnsureCreated();
-
-            app.UseMiniProfiler();
-
-            // app.UseHttpsRedirection();
+            if (settings.EnableProfiler) {
+                app.UseMiniProfiler();
+            }
 
             app.UseRouting();
-
             app.UseAuthorization();
-
             app.UseEndpoints(endpoints => {
                 endpoints.MapControllers();
             });
