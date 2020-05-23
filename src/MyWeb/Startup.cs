@@ -6,7 +6,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 namespace MyWeb {
-
     public class AppSettings {
         public string ConnectionString { set; get; }
         public bool EnableProfiler { set; get; }
@@ -20,7 +19,6 @@ namespace MyWeb {
         public IConfiguration Configuration { get; }
 
         public void ConfigureServices(IServiceCollection services) {
-
             var settings = Configuration.Get<AppSettings>();
 
             services.AddSingleton<AppSettings>(settings);
@@ -33,9 +31,9 @@ namespace MyWeb {
             services.AddControllers();
 
             if (settings.EnableProfiler) {
-                services.AddMiniProfiler(opitons =>
-                    opitons.RouteBasePath = "/profiler"
-                ).AddEntityFramework();
+                services.AddMiniProfiler(opitons => {
+                    opitons.RouteBasePath = "/profiler";
+                }).AddEntityFramework();
             }
         }
 
